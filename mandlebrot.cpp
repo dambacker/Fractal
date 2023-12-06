@@ -3,40 +3,6 @@
 
 using namespace std;
 
-string colors[15] = {
-	"\033[22;30m", //black[]    
-	"\033[22;31m", //red[]      
-	"\033[01;31m", //l_red[]    
-	"\033[22;32m", //green[]    
-	"\033[01;32m", //l_green[]  
-	"\033[22;33m", //orange[]   
-	"\033[01;33m", //yellow[]   
-	"\033[22;34m", //blue[]     
-	"\033[01;34m", //l_blue[]   
-	"\033[22;35m", //magenta[]  
-	"\033[01;35m", //l_magenta[]
-	"\033[22;36m", //cyan[]     
-	"\033[01;36m", //l_cyan[]   
-	"\033[22;37m", //gray[]     
-	"\033[01;37m", //white[]    
-};
-
-char black[]     = "\033[22;30m";
-char red[]       = "\033[22;31m";
-char l_red[]     = "\033[01;31m";
-char green[]     = "\033[22;32m";
-char l_green[]   = "\033[01;32m";
-char orange[]    = "\033[22;33m";
-char yellow[]    = "\033[01;33m";
-char blue[]      = "\033[22;34m";
-char l_blue[]    = "\033[01;34m";
-char magenta[]   = "\033[22;35m";
-char l_magenta[] = "\033[01;35m";
-char cyan[]      = "\033[22;36m";
-char l_cyan[]    = "\033[01;36m";
-char gray[]      = "\033[22;37m";
-char white[]     = "\033[01;37m";
-
 double InterpolationPosition[6] = 
 {   
     0.0,     
@@ -66,13 +32,9 @@ void InitColors()
     for (int i=0; i<NUMCOLORS; i++)
     {
         int p = 0;
-        double pos = ((double)i/(double)(NUMCOLORS-1));
-        while (pos > InterpolationPosition[p+1])
-        {
+        while (((double)i/(double)(NUMCOLORS-1)) > InterpolationPosition[p+1])
             p++;
-            pos = ((double)i/(double)(NUMCOLORS-1));
-        }
-        double k = (pos - InterpolationPosition[p]) / (InterpolationPosition[p+1] - InterpolationPosition[p]);
+        double k = (((double)i/(double)(NUMCOLORS-1)) - InterpolationPosition[p]) / (InterpolationPosition[p+1] - InterpolationPosition[p]);
         Color[i][0] = (1.0 - k)*InterpolationColor[p][0] + k*InterpolationColor[p+1][0];
         Color[i][1] = (1.0 - k)*InterpolationColor[p][1] + k*InterpolationColor[p+1][1];
         Color[i][2] = (1.0 - k)*InterpolationColor[p][2] + k*InterpolationColor[p+1][2];

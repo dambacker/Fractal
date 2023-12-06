@@ -1,32 +1,8 @@
-# Prerequisites
-*.d
+# (dam) output files
+*.ppm
 
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
+# (dam) compiled files
 *.exe
-*.out
-*.app
+*.obj
+*.ilk
+*.pdb
