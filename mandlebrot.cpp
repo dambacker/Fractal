@@ -1,3 +1,12 @@
+// 2023 - Dam Backer
+//
+// Basic implementation of Mandelbrot fractal
+// Initial input.txt zooms into "Seahorse valley" using Ultra Fractal (-like) color scheme 
+//
+// references:
+//  Seahorse Valley: https://www.mrob.com/pub/muency/seahorsevalley.html
+//  Ultra Fractal Colors: https://stackoverflow.com/questions/16500656/which-color-gradient-is-used-to-color-mandelbrot-in-wikipedia 
+
 #include <iostream>
 #include <fstream>
 
@@ -68,8 +77,8 @@ int main()
         uint8_t* p = (uint8_t*)rgb;
         int iterations = 0;
 
-        printf("\033[2J"); //clear screen, move to (0,0)
-        printf("\033[0;0H");
+        printf("\033[2J"); //clear screen
+        printf("\033[0;0H"); //put cursor at (0,0)
         printf("fractal%04d\n", image);
 
         double startImage = clock();
@@ -131,7 +140,7 @@ int main()
                     uint8_t r = (uint8_t)(R/W);
                     uint8_t g = (uint8_t)(G/W);
                     uint8_t b = (uint8_t)(B/W);
-                    printf("\033[48;2;%d;%d;%dm ", r, g, b);
+                    printf("\033[48;2;%d;%d;%dm ", r, g, b);  //space with background color (r,g,b)
                 }
                 printf("\n");
             }
@@ -143,13 +152,13 @@ int main()
         char filename[256];
         sprintf(filename, "fractal%04d.ppm", image++);
         ofstream ppmFile(filename, ios::out | ios::binary);
-        ppmFile << "P6" << endl;
-        ppmFile << imageWidth << " " << imageHeight << endl;
-        ppmFile << "255" << endl;
+        ppmFile << "P6" << endl << imageWidth << " " << imageHeight << endl << "255" << endl;
         ppmFile.write(rgb, imageHeight*imageWidth*3);
+        ppmFile.close();
 
         printf("Finished %s in %.3f\n", filename, (clock()-startImage)/CLOCKS_PER_SEC);
 
+        //read next zoom defail
         inputFile >> imageWidth >> imageHeight >> maxIterations >> R >> I >> size;
     }
 
