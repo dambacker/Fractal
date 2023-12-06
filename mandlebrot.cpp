@@ -12,28 +12,11 @@
 
 using namespace std;
 
-double InterpolationPosition[6] = 
-{   
-    0.0,     
-    0.16,    
-    0.42,    
-    0.6425,  
-    0.8575,
-    1.0
-};
-
-uint8_t InterpolationColor[6][3] = 
-{
-    {  0,   7, 100},
-    { 32, 107, 203},
-    {237, 255, 255},
-    {255, 170,   0},
-    {  0,   2,   0},
-    {  0,   7, 100},
-};
-
+//color scheme from Ultra Fractal, based on bicubic interpolation of 5 color points (6 to make it connect)
+double InterpolationPosition[6] = { 0.0, 0.16, 0.42, 0.642, 0.8, 1.0 };
+uint8_t InterpolationColor[6][3] = { {  0,   7, 100}, { 32, 107, 203}, {237, 255, 255}, {255, 170,   0}, {  0,   2,   0}, {  0,   7, 100} };
+//color palette to be used with fractal calculation iterations
 #define NUMCOLORS   256
-
 uint8_t Color[NUMCOLORS][3];
 
 void InitColors()
@@ -55,7 +38,6 @@ int main()
     InitColors();
 
     ifstream inputFile("input.txt");
-
     if (!inputFile)
     {
         printf("Could not open file!\n");
@@ -71,18 +53,16 @@ int main()
 
     double start = clock();
 
+    uint8_t* rgb = (uint8_t*)malloc(imageHeight*imageWidth*3);
+
     while (imageWidth != 0)
     {
-        char* rgb = (char*)malloc(imageHeight*imageWidth*3);
-        uint8_t* p = (uint8_t*)rgb;
-        int iterations = 0;
-
-        printf("\033[2J"); //clear screen
-        printf("\033[0;0H"); //put cursor at (0,0)
-        printf("fractal%04d\n", image);
+        //reset color, clear sceen, position (0,0) + fractal image info
+        printf("\033[39m\033[49m\033[2J\033[0;0Hfractal%04d\n", image);
 
         double startImage = clock();
 
+        uint8_t* p = rgb;
         for (int y = 0; y < imageHeight; y++)
         {
             for (int x = 0; x < imageWidth; x++)
@@ -96,7 +76,7 @@ int main()
                 double zrzr = 0;
                 double zizi = 0;
 
-                iterations = 0;
+                int iterations = 0;
                 while ((iterations++ < maxIterations) && (zrzr+zizi < 4.0))
                 {
                     zrzr = zr*zr;
@@ -120,49 +100,41 @@ int main()
                 }
             }
 
-            int W = 32;
-            if (y % (imageHeight/(W/2)) == 0)
+            //colored text progress bar showing a scaled down version of the fractal
+            unsigned int width  = 32;
+            unsigned int height = 16;
+            if (y % (imageHeight/height) == 0)
             {
-                for (int x=0; x<W; x++)
+                for (int x=0; x<width; x++)
                 {
-                    int R = 0;
-                    int G = 0;
-                    int B = 0;
-                    for (int wx=0; wx<W; wx++)
+                    unsigned int r = 0;
+                    unsigned int g = 0;
+                    unsigned int b = 0;
+                    for (int wx=0; wx<imageWidth/width; wx++)
                     {
-                        uint8_t r = rgb[(x*imageWidth/W+wx+y*imageWidth)*3 + 0];
-                        uint8_t g = rgb[(x*imageWidth/W+wx+y*imageWidth)*3 + 1];
-                        uint8_t b = rgb[(x*imageWidth/W+wx+y*imageWidth)*3 + 2];
-                        R += r;
-                        G += g;
-                        B += b;
+                        r += rgb[(x*imageWidth/width+wx+y*imageWidth)*3 + 0];
+                        g += rgb[(x*imageWidth/width+wx+y*imageWidth)*3 + 1];
+                        b += rgb[(x*imageWidth/width+wx+y*imageWidth)*3 + 2];
                     }
-                    uint8_t r = (uint8_t)(R/W);
-                    uint8_t g = (uint8_t)(G/W);
-                    uint8_t b = (uint8_t)(B/W);
-                    printf("\033[48;2;%d;%d;%dm ", r, g, b);  //space with background color (r,g,b)
+                    printf("\033[48;2;%d;%d;%dm ", r/width, g/width, b/width);  //space with background color (r,g,b)
                 }
                 printf("\n");
             }
         }
-
-        printf("\033[39m\033[49m");
 
         //save image to binary ppm file
         char filename[256];
         sprintf(filename, "fractal%04d.ppm", image++);
         ofstream ppmFile(filename, ios::out | ios::binary);
         ppmFile << "P6" << endl << imageWidth << " " << imageHeight << endl << "255" << endl;
-        ppmFile.write(rgb, imageHeight*imageWidth*3);
+        ppmFile.write((char*)rgb, imageHeight*imageWidth*3);
         ppmFile.close();
 
-        printf("Finished %s in %.3f\n", filename, (clock()-startImage)/CLOCKS_PER_SEC);
-
-        //read next zoom defail
+        //read next zoom detail
         inputFile >> imageWidth >> imageHeight >> maxIterations >> R >> I >> size;
     }
 
-    printf("Total time for %d images: %.3f\n", image, (clock()-start)/CLOCKS_PER_SEC);
+    printf("\033[39m\033[49mTotal time for %d images: %.3f\n", image, (clock()-start)/CLOCKS_PER_SEC); //reset color + total time
 
     return 0;
 }
