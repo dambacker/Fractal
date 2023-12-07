@@ -2,6 +2,7 @@
 *.ppm
 
 # (dam) compiled files
+.vscode/*
 *.exe
 *.obj
 *.ilk
