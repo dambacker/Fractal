@@ -53,16 +53,16 @@ int main()
 
     double start = clock();
 
+    unsigned int* iterations = (unsigned int*)malloc(imageHeight*imageWidth*sizeof(unsigned int));
     uint8_t* rgb = (uint8_t*)malloc(imageHeight*imageWidth*3);
 
     while (imageWidth != 0)
     {
         //reset color, clear sceen, position (0,0) + fractal image info
-        printf("\033[39m\033[49m\033[2J\033[0;0Hfractal%04d\n", image);
+        printf("\033[39m\033[49m\033[2J\033[0;0H(%.1f) fractal%04d\n", (clock()-start)/CLOCKS_PER_SEC, image);
 
         double startImage = clock();
 
-        uint8_t* p = rgb;
         for (int y = 0; y < imageHeight; y++)
         {
             for (int x = 0; x < imageWidth; x++)
@@ -76,8 +76,8 @@ int main()
                 double zrzr = 0;
                 double zizi = 0;
 
-                int iterations = 0;
-                while ((iterations++ < maxIterations) && (zrzr+zizi < 4.0))
+                int iteration = 0;
+                while ((iteration++ < maxIterations) && (zrzr+zizi < 4.0))
                 {
                     zrzr = zr*zr;
                     zizi = zi*zi;
@@ -85,19 +85,7 @@ int main()
                     zr = zrzr - zizi + cr;
                 }
 
-                if (iterations < maxIterations)
-                {
-                    *p++ = Color[iterations%NUMCOLORS][0];
-                    *p++ = Color[iterations%NUMCOLORS][1];
-                    *p++ = Color[iterations%NUMCOLORS][2];
-                }
-                else
-                {
-                    //black
-                    *p++ = 0;
-                    *p++ = 0;
-                    *p++ = 0;
-                }
+                iterations[x+y*imageWidth] = iteration;
             }
 
             //colored text progress bar showing a scaled down version of the fractal
@@ -112,13 +100,24 @@ int main()
                     unsigned int b = 0;
                     for (int wx=0; wx<imageWidth/width; wx++)
                     {
-                        r += rgb[(x*imageWidth/width+wx+y*imageWidth)*3 + 0];
-                        g += rgb[(x*imageWidth/width+wx+y*imageWidth)*3 + 1];
-                        b += rgb[(x*imageWidth/width+wx+y*imageWidth)*3 + 2];
+                        r += (iterations[x*imageWidth/width+wx+y*imageWidth] < maxIterations) ? Color[iterations[x*imageWidth/width+wx+y*imageWidth]%NUMCOLORS][0] : 0;
+                        g += (iterations[x*imageWidth/width+wx+y*imageWidth] < maxIterations) ? Color[iterations[x*imageWidth/width+wx+y*imageWidth]%NUMCOLORS][1] : 0;
+                        b += (iterations[x*imageWidth/width+wx+y*imageWidth] < maxIterations) ? Color[iterations[x*imageWidth/width+wx+y*imageWidth]%NUMCOLORS][2] : 0;
                     }
                     printf("\033[48;2;%d;%d;%dm ", r/width, g/width, b/width);  //space with background color (r,g,b)
                 }
                 printf("\n");
+            }
+        }
+
+        //turn iterations into rgb color image
+        for (int y = 0; y < imageHeight; y++)
+        {
+            for (int x = 0; x < imageWidth; x++)
+            {
+                rgb[(x+y*imageWidth)*3+0] = (iterations[x+y*imageWidth] < maxIterations) ? Color[iterations[x+y*imageWidth]%NUMCOLORS][0] : 0;
+                rgb[(x+y*imageWidth)*3+1] = (iterations[x+y*imageWidth] < maxIterations) ? Color[iterations[x+y*imageWidth]%NUMCOLORS][1] : 0;
+                rgb[(x+y*imageWidth)*3+2] = (iterations[x+y*imageWidth] < maxIterations) ? Color[iterations[x+y*imageWidth]%NUMCOLORS][2] : 0;
             }
         }
 
@@ -135,6 +134,9 @@ int main()
     }
 
     printf("\033[39m\033[49mTotal time for %d images: %.3f\n", image, (clock()-start)/CLOCKS_PER_SEC); //reset color + total time
+
+    free(rgb);
+    free(iterations);
 
     return 0;
 }
